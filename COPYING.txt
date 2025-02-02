@@ -1,0 +1,13 @@
+Copyright 2025 TNET
+
+This work is released under the terms of BSD-2-Clause OR MIT OR Apache-2.0, according with:
+	SPDX-License-Identifier: BSD-2-Clause OR MIT OR Apache-2.0
+		LICENSES/BSD-2-Clause.txt
+		LICENSES/MIT.txt
+		LICENSES/Apache-2.0.txt
+
+The license is documented for each file in accordance with the REUSE specification (https://reuse.software).
+
+The terms in this COPYING file apply to all parts of this work, including all source code, all supplementary and all documentation.
+
+All contributions to this work are subject to the terms of this COPYING file.

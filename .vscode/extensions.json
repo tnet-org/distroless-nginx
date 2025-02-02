@@ -1,0 +1,13 @@
+{
+    "recommendations": [
+        // Dockerfile
+        "ms-azuretools.vscode-docker",
+        // GitHub Actions
+        "github.vscode-github-actions",
+        // GitLab CI
+        "gitlab.gitlab-workflow",
+        // .editorconfig
+        "editorconfig.editorconfig"
+    ],
+    "unwantedRecommendations": []
+}

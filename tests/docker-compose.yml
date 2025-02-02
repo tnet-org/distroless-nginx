@@ -1,0 +1,41 @@
+# Copyright (c) 2025 TNET
+# SPDX-License-Identifier: BSD-2-Clause OR MIT OR Apache-2.0
+services:
+  nginx:
+    build:
+      context: ../
+      dockerfile: images/nginx/Dockerfile
+      args:
+        # test with stable
+        - NGINX_VERSION=1.26.2
+        - GEOIP2_VERSION=3.4
+    cap_drop:
+      - ALL
+    security_opt:
+      - no-new-privileges:true
+    restart: unless-stopped
+    read_only: true
+    tmpfs:
+      - "/tmp:exec,uid=1002,gid=1000"
+    ports:
+      - "8080:8080"
+  nginx-modsecurity:
+    build:
+      context: ../
+      dockerfile: images/modsecurity/Dockerfile
+      args:
+        # test with stable
+        - NGINX_VERSION=1.26.2
+        - GEOIP2_VERSION=3.4
+        - MODSECURITY_VERSION=v3.0.13
+        - MODSECURITY_NGINX_VERSION=v1.0.3
+    cap_drop:
+      - ALL
+    security_opt:
+      - no-new-privileges:true
+    restart: unless-stopped
+    read_only: true
+    tmpfs:
+      - "/tmp:exec,uid=1002,gid=1000"
+    ports:
+      - "8080:8080"

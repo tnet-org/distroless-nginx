@@ -1,0 +1,2 @@
+# Check out files with Unix-style newlines.
+* text=auto eol=lf

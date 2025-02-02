@@ -1,0 +1,90 @@
+name: Docker Images
+
+on:
+  push:
+    branches:
+      - main
+  schedule:
+    # Run every Monday at 00:00 UTC
+    - cron: '0 0 * * 1'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  packages: write
+
+env:
+  GHCR_REPO: ghcr.io/${{ github.repository }}
+  STABLE_NGINX_VERSION: "1.26.2"
+  MAINLINE_NGINX_VERSION: "1.27.3"
+  MODSECURITY_VERSION: "v3.0.13"
+  MODSECURITY_NGINX_VERSION: "v1.0.3"
+  GEOIP2_VERSION: "3.4"
+
+jobs:
+  build-and-push:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        version: [stable, mainline]
+        image: [nginx, modsecurity]
+
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Version Variables
+        id: set_versions
+        run: |
+          COMMIT_HASH=$(git rev-parse --short HEAD)
+          TIMESTAMP=$(date -u +"%Y%m%d-%H%M%S")
+
+          # Set NGINX version
+          if [ "${{ matrix.version }}" == "stable" ]; then
+            NGINX_VERSION="${STABLE_NGINX_VERSION}"
+            BASE_TAG="stable"
+          else
+            NGINX_VERSION="${MAINLINE_NGINX_VERSION}"
+            BASE_TAG="mainline"
+          fi
+          echo "NGINX_VERSION=$NGINX_VERSION" >> "$GITHUB_ENV"
+          echo "BASE_TAG=$BASE_TAG" >> "$GITHUB_ENV"
+
+          echo "MODSECURITY_VERSION=${MODSECURITY_VERSION}" >> "$GITHUB_ENV"
+          echo "MODSECURITY_NGINX_VERSION=${MODSECURITY_NGINX_VERSION}" >> "$GITHUB_ENV"
+
+          # Image tag
+          if [ "${{ matrix.image }}" == "modsecurity" ]; then
+            IMAGE_TAG="${COMMIT_HASH}-${TIMESTAMP}-${BASE_TAG}-${NGINX_VERSION}-modsecurity"
+          else
+            IMAGE_TAG="${COMMIT_HASH}-${TIMESTAMP}-${BASE_TAG}-${NGINX_VERSION}"
+          fi
+          echo "IMAGE_TAG=$IMAGE_TAG" >> "$GITHUB_ENV"
+      - name: Set up QEMU
+        uses: docker/setup-qemu-action@v2
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v2
+
+      - name: Log in to GitHub Container Registry
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Build and Push Docker Image
+        uses: docker/build-push-action@v4
+        with:
+          context: .
+          file: images/${{ matrix.image }}/Dockerfile
+          platforms: linux/amd64
+          push: true
+          tags: |
+            ${{ env.GHCR_REPO }}:${{ env.IMAGE_TAG }}
+            ${{ env.GHCR_REPO }}:${{ env.BASE_TAG }}${{ matrix.image == 'modsecurity' && '-modsecurity' || '' }}
+          build-args: |
+            NGINX_VERSION=${{ env.NGINX_VERSION }}
+            MODSECURITY_VERSION=${{ env.MODSECURITY_VERSION }}
+            MODSECURITY_NGINX_VERSION=${{ env.MODSECURITY_NGINX_VERSION }}
+            GEOIP2_VERSION=${{ env.GEOIP2_VERSION }}

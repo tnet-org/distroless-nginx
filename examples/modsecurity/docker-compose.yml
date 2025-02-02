@@ -1,0 +1,36 @@
+# Copyright (c) 2025 TNET
+# SPDX-License-Identifier: BSD-2-Clause OR MIT OR Apache-2.0
+services:
+  nginx-modsecurity:
+    # use GHCR image
+    image: ghcr.io/tnetmoe/distroless-nginx:mainline-modsecurity
+    # drop all capabilities
+    cap_drop:
+      - ALL
+    cap_add:
+      # Needed for ports below 1024
+      - CAP_NET_BIND_SERVICE
+    security_opt:
+      # prevents the container from gaining any additional privileges
+      - no-new-privileges:true
+    restart: unless-stopped
+    # make fs read-only
+    read_only: true
+    # mount /tmp as tmpfs
+    tmpfs:
+      - "/tmp:exec,uid=1002,gid=1000"
+    # expose port 80
+    ports:
+      - "80:80"
+    volumes:
+      # Override default.conf with custom configuration
+      - ./default.conf:/etc/nginx/conf.d/default.conf:ro
+      # ModSecurity configuration
+      # Template: https://github.com/owasp-modsecurity/ModSecurity/blob/v3/master/modsecurity.conf-recommended
+      - ./modsecurity.conf:/etc/nginx/modsecurity.conf:ro
+      # CRS configuration
+      # Template: https://github.com/coreruleset/coreruleset/blob/main/crs-setup.conf.example
+      - ./crs-setup.conf:/etc/nginx/crs/crs-setup.conf:ro
+      # CRS rules
+      # CRS rules folder https://github.com/coreruleset/coreruleset/tree/main/rules
+      - ./rules:/etc/nginx/crs/rules:ro
