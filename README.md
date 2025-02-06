@@ -17,9 +17,9 @@ Note that debugging the images in production is straight up impossible, so you s
 ## Getting started
 
 ### Available tags:
-- `stable` (1.26.2)
+- `stable` (1.26.3)
   - `stable-modsecurity`
-- `mainline` (1.27.3)
+- `mainline` (1.27.4)
   - `mainline-modsecurity`
 
 [stable vs mainline](https://docs.nginx.com/nginx/admin-guide/installing-nginx/installing-nginx-open-source/#choosing-between-a-stable-or-a-mainline-version)
